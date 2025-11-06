@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { margin: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; }
+    #widget { text-align: center; font-size: 32px; color: white; text-shadow: 2px 2px 6px rgba(0,0,0,0.9); opacity: 0; transform: rotateY(90deg); transition: opacity 0.6s ease, transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+    #widget.show { opacity: 1; transform: rotateY(0deg); }
+    .platform { font-size: 18px; opacity: 0.8; margin-bottom: 8px; font-weight: 300; }
+    .username { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div id="widget">
+    <div class="platform" id="plat"></div>
+    <div id="msg"></div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let queue = [];
+    let currentIndex = 0;
+    const widget = document.getElementById('widget');
+    const platEl = document.getElementById('plat');
+    const msgEl = document.getElementById('msg');
+
+    const types = {
+      kick_follow: { plat: 'Kick', msg: 'Latest Follower', color: '#00ff00' },
+      kick_sub: { plat: 'Kick', msg: 'Latest Subscriber', color: '#00ff99' },
+      youtube_sub: { plat: 'YouTube', msg: 'Latest Subscriber', color: '#ff0000' },
+      twitch_follow: { plat: 'Twitch', msg: 'Latest Follower', color: '#9146ff' },
+      twitch_sub: { plat: 'Twitch', msg: 'Latest Subscriber', color: '#c8a2ff' }
+    };
+
+    socket.on('initQueue', (events) => { queue = events; rotate(); });
+    socket.on('newEvent', (event) => {
+      queue = queue.filter(e => e.type !== event.type).concat(event);
+      if (currentIndex >= queue.length) currentIndex = 0;
+    });
+
+    function rotate() {
+      if (queue.length === 0) {
+        widget.innerHTML = '<div style="font-size:24px;opacity:0.6">Waiting for events...</div>';
+        setTimeout(rotate, 7000);
+        return;
+      }
+      const item = queue[currentIndex];
+      const info = types[item.type];
+      platEl.textContent = info.plat;
+      platEl.style.color = info.color;
+      msgEl.innerHTML = `${info.msg}: <span class="username">@${item.username}</span>`;
+      
+      widget.classList.remove('show');
+      void widget.offsetWidth;
+      widget.classList.add('show');
+      
+      currentIndex = (currentIndex + 1) % queue.length;
+      setTimeout(rotate, 7000);
+    }
+  </script>
+</body>
+</html>
