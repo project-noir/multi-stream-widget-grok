@@ -21,3 +21,13 @@ Shows latest: Follower/Sub per platform → rotates every **7s**
 ## OBS Setup
 
 Add **Browser Source**:
+URL: https://your-app.onrender.com/alert.html
+Width: 800, Height: 200
+
+---
+
+## Test Events
+
+- Twitch: Use [Twitch Event Trigger](https://twitchapps.com/tmi/)
+- Kick: Follow/sub your channel
+- YouTube: Gift a membership in live chat
